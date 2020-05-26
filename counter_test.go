@@ -39,3 +39,25 @@ func TestCounter_GetMostCommon(t *testing.T) {
 	assert.Equal(t, "b", wordCounts[0].Word)
 	assert.Equal(t, uint64(2), wordCounts[0].Count)
 }
+
+func benchmarkHelper(b *testing.B, isBaseline bool) {
+	text := strings.Repeat(strings.Repeat("a b c d ", 50)+"\n", 10000)
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		c := NewCounter()
+		if isBaseline {
+			_ = c.countBaseline(strings.NewReader(text))
+		} else {
+			_ = c.countGoroutines(strings.NewReader(text))
+		}
+	}
+}
+
+func BenchmarkCounter_CountBaseline(b *testing.B) {
+	benchmarkHelper(b, true)
+}
+
+func BenchmarkCounter_CountGoroutines(b *testing.B) {
+	benchmarkHelper(b, false)
+}
